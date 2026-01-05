@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'https://hatra-suci-backend.vercel.app',
+        target: 'https://hatra-backend-testing.vercel.app',
         changeOrigin: true,
         secure: false,
       }

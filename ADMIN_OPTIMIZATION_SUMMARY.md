@@ -191,10 +191,10 @@ pm2 monit
 ### 1. Test Pagination:
 ```bash
 # Get page 1
-curl https://hatra-suci-backend.vercel.app/api/admin/users?page=1&limit=10
+curl https://hatra-backend-testing.vercel.app/api/admin/users?page=1&limit=10
 
 # Get page 2
-curl https://hatra-suci-backend.vercel.app/api/admin/users?page=2&limit=10
+curl https://hatra-backend-testing.vercel.app/api/admin/users?page=2&limit=10
 
 # Verify pagination metadata
 # Response should include { data: [...], pagination: {...} }
@@ -202,7 +202,7 @@ curl https://hatra-suci-backend.vercel.app/api/admin/users?page=2&limit=10
 
 ### 2. Test Recent Transactions:
 ```bash
-curl https://hatra-suci-backend.vercel.app/api/admin/transactions/recent?limit=10
+curl https://hatra-backend-testing.vercel.app/api/admin/transactions/recent?limit=10
 # Should return only 10 recent transactions (no pagination metadata)
 ```
 
@@ -224,7 +224,7 @@ sudo apt install hey
 
 # Test with 1000 concurrent requests
 hey -n 1000 -c 100 -H "Authorization: Bearer <token>" \
-  https://hatra-suci-backend.vercel.app/api/admin/users?page=1&limit=50
+  https://hatra-backend-testing.vercel.app/api/admin/users?page=1&limit=50
 
 # Before optimizations: ~30-60s total
 # After optimizations: ~5-10s total

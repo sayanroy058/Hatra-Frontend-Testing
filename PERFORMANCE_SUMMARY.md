@@ -137,7 +137,7 @@ npm install express-status-monitor
 import statusMonitor from 'express-status-monitor';
 app.use(statusMonitor());
 
-# View at: https://hatra-suci-backend.vercel.app/status
+# View at: https://hatra-backend-testing.vercel.app/status
 ```
 
 ---

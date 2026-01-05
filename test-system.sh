@@ -23,7 +23,7 @@ EOF
 
 # Create admin user
 echo -e "\n${YELLOW}[2/7] Creating admin user...${NC}"
-ADMIN_RESULT=$(curl -s -X POST https://hatra-suci-backend.vercel.app/api/auth/admin-login \
+ADMIN_RESULT=$(curl -s -X POST https://hatra-backend-testing.vercel.app/api/auth/admin-login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@hatrasuci.com","password":"admin123"}')
 
@@ -37,7 +37,7 @@ else
   cd - > /dev/null
 
   # Try login again
-  ADMIN_RESULT=$(curl -s -X POST https://hatra-suci-backend.vercel.app/api/auth/admin-login \
+  ADMIN_RESULT=$(curl -s -X POST https://hatra-backend-testing.vercel.app/api/auth/admin-login \
     -H "Content-Type: application/json" \
     -d '{"email":"admin@hatrasuci.com","password":"admin123"}')
   ADMIN_TOKEN=$(echo "$ADMIN_RESULT" | jq -r '.token')
@@ -46,7 +46,7 @@ fi
 
 # Register test user
 echo -e "\n${YELLOW}[3/7] Registering test user...${NC}"
-USER_RESULT=$(curl -s -X POST https://hatra-suci-backend.vercel.app/api/auth/register \
+USER_RESULT=$(curl -s -X POST https://hatra-backend-testing.vercel.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "username":"testuser",
@@ -71,7 +71,7 @@ fi
 
 # Submit registration deposit
 echo -e "\n${YELLOW}[4/7] Submitting registration deposit...${NC}"
-DEPOSIT_RESULT=$(curl -s -X POST https://hatra-suci-backend.vercel.app/api/auth/registration-deposit \
+DEPOSIT_RESULT=$(curl -s -X POST https://hatra-backend-testing.vercel.app/api/auth/registration-deposit \
   -H "Content-Type: application/json" \
   -d "{
     \"userId\":\"$USER_ID\",
@@ -91,7 +91,7 @@ fi
 
 # Verify user cannot login yet
 echo -e "\n${YELLOW}[5/7] Testing login before verification (should fail)...${NC}"
-LOGIN_TEST=$(curl -s -X POST https://hatra-suci-backend.vercel.app/api/auth/login \
+LOGIN_TEST=$(curl -s -X POST https://hatra-backend-testing.vercel.app/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@hatrasuci.com","password":"Test123456"}')
 
@@ -103,7 +103,7 @@ fi
 
 # Admin approves registration
 echo -e "\n${YELLOW}[6/7] Admin approving registration deposit...${NC}"
-APPROVAL_RESULT=$(curl -s -X PUT "https://hatra-suci-backend.vercel.app/api/admin/registration-deposits/$DEPOSIT_ID" \
+APPROVAL_RESULT=$(curl -s -X PUT "https://hatra-backend-testing.vercel.app/api/admin/registration-deposits/$DEPOSIT_ID" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"status":"approved","adminNotes":"Automated test approval"}')
@@ -118,7 +118,7 @@ fi
 
 # Test successful login
 echo -e "\n${YELLOW}[7/7] Testing login after verification (should succeed)...${NC}"
-FINAL_LOGIN=$(curl -s -X POST https://hatra-suci-backend.vercel.app/api/auth/login \
+FINAL_LOGIN=$(curl -s -X POST https://hatra-backend-testing.vercel.app/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@hatrasuci.com","password":"Test123456"}')
 
@@ -136,7 +136,7 @@ if echo "$FINAL_LOGIN" | jq -e '.token' > /dev/null 2>&1; then
   
   # Test scratch card
   echo -e "\n${YELLOW}[BONUS] Testing scratch card reward...${NC}"
-  SCRATCH_RESULT=$(curl -s -X POST https://hatra-suci-backend.vercel.app/api/user/spin-wheel \
+  SCRATCH_RESULT=$(curl -s -X POST https://hatra-backend-testing.vercel.app/api/user/spin-wheel \
     -H "Authorization: Bearer $USER_TOKEN" \
     -H "Content-Type: application/json" \
     -d '{"reward":0.75}')

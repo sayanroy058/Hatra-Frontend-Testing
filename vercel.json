@@ -2,9 +2,8 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://hatra-suci-backend.vercel.app/api/$1"
-    }
-    ,
+      "destination": "https://hatra-backend-testing.vercel.app/api/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
