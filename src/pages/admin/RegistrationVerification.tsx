@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, XCircle, Eye, Activity, UserCheck, AlertCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, Eye, Activity, UserCheck, AlertCircle, Copy } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +59,22 @@ const RegistrationVerification = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: 'Copied!',
+        description: `${label} copied to clipboard`,
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to copy to clipboard',
+      });
     }
   };
 
@@ -166,11 +182,31 @@ const RegistrationVerification = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Transaction Hash</p>
-                      <p className="text-sm font-mono truncate">{deposit.transactionHash}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-mono truncate flex-1">{deposit.transactionHash}</p>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-primary/20"
+                          onClick={() => copyToClipboard(deposit.transactionHash, 'Transaction hash')}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Wallet Address</p>
-                      <p className="text-sm font-mono truncate">{deposit.walletAddress}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-mono truncate flex-1">{deposit.walletAddress}</p>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-primary/20"
+                          onClick={() => copyToClipboard(deposit.walletAddress, 'Wallet address')}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Submitted</p>
