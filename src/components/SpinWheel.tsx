@@ -246,7 +246,7 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
         </p>
 
         {/* Scratch Card Container */}
-        <div className="relative w-full mb-4 rounded-xl overflow-hidden border-4 border-primary/50">
+        <div className="relative w-full mb-4 rounded-xl overflow-hidden border-4 border-primary/50" style={{ height: '200px' }}>
           {/* Prize behind scratch layer */}
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 p-8">
             <div className="text-center">
@@ -264,10 +264,10 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
           {/* Scratch Layer (Canvas) */}
           <canvas
             ref={canvasRef}
-            className="relative block cursor-crosshair touch-none"
+            className="absolute inset-0 block cursor-crosshair touch-none"
             style={{
               width: '100%',
-              height: '200px',
+              height: '100%',
               cursor: hasScratched || alreadySpun ? 'default' : 'crosshair',
               opacity: alreadySpun ? 0.5 : 1,
               touchAction: 'none'
