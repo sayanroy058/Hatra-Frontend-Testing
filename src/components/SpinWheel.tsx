@@ -27,7 +27,7 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
     const checkSpinStatus = async () => {
       try {
         const now = new Date();
-        
+
         // Check if today is Sunday (day 0) - scratch cards not available on Sundays
         if (now.getDay() === 0) {
           setAlreadySpun(true);
@@ -38,21 +38,21 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
           setNextSpinTime(nextMonday);
           return;
         }
-        
+
         const response = await authAPI.getProfile();
         const lastSpinTime = response.data.spinWheelLastUsed;
-        
+
         if (lastSpinTime) {
           const lastSpin = new Date(lastSpinTime);
-          
+
           // Calculate start of today (midnight)
           const startOfToday = new Date(now);
           startOfToday.setHours(0, 0, 0, 0);
-          
+
           // Calculate start of tomorrow (next midnight)
           const startOfTomorrow = new Date(startOfToday);
           startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
-          
+
           // Check if last spin was today (same calendar day)
           if (lastSpin >= startOfToday) {
             setAlreadySpun(true);
@@ -63,33 +63,48 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
         console.error('Failed to check spin status:', error);
       }
     };
-    
+
     checkSpinStatus();
 
-    // Initialize scratch card
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    // Initialize scratch card with a small delay to ensure canvas is rendered
+    const initCanvas = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    // Set canvas size
-    canvas.width = 300;
-    canvas.height = 200;
+      // Get the display size of the canvas
+      const rect = canvas.getBoundingClientRect();
+      const displayWidth = rect.width || canvas.offsetWidth || 300;
+      const displayHeight = 200;
 
-    // Draw scratch area
-    ctx.fillStyle = '#8B5CF6';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Set canvas size to match display size for proper scaling
+      // Use device pixel ratio for crisp rendering on retina displays
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
 
-    // Add text
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 24px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('SCRATCH HERE', canvas.width / 2, canvas.height / 2 - 10);
-    ctx.font = '16px Arial';
-    ctx.fillText('to reveal your prize!', canvas.width / 2, canvas.height / 2 + 20);
+      // Scale the context to match device pixel ratio
+      ctx.scale(dpr, dpr);
 
-    // Don't set reward here - will get it from server after claim
+      // Draw scratch area
+      ctx.fillStyle = '#8B5CF6';
+      ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+      // Add text
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('SCRATCH HERE', displayWidth / 2, displayHeight / 2 - 10);
+      ctx.font = '16px Arial';
+      ctx.fillText('to reveal your prize!', displayWidth / 2, displayHeight / 2 + 20);
+    };
+
+    // Small delay to ensure canvas is properly rendered
+    const timeoutId = setTimeout(initCanvas, 100);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Update countdown timer
@@ -99,17 +114,17 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
     const updateTimer = () => {
       const now = new Date();
       const diff = nextSpinTime.getTime() - now.getTime();
-      
+
       if (diff <= 0) {
         setAlreadySpun(false);
         setTimeRemaining('');
         return;
       }
-      
+
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
+
       setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
     };
 
@@ -129,19 +144,20 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
     let x: number, y: number;
 
     if ('touches' in e) {
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
+      x = (e.touches[0].clientX - rect.left) * dpr;
+      y = (e.touches[0].clientY - rect.top) * dpr;
     } else {
-      x = e.clientX - rect.left;
-      y = e.clientY - rect.top;
+      x = (e.clientX - rect.left) * dpr;
+      y = (e.clientY - rect.top) * dpr;
     }
 
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.arc(x, y, 20 * dpr, 0, Math.PI * 2);
     ctx.fill();
 
     // Calculate scratch percentage
@@ -159,16 +175,16 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
     if (percentage > 60 && !hasScratched) {
       setHasScratched(true);
       setShowConfetti(true);
-      
+
       // Immediately fetch and display the reward amount, then auto-claim
       try {
         setIsClaiming(true);
         const response = await userAPI.spinWheel();
         const actualReward = response.data.reward;
-        
+
         // Update displayed reward with server response
         setReward(actualReward);
-        
+
         // Set next spin time to midnight
         const now = new Date();
         const startOfTomorrow = new Date(now);
@@ -176,15 +192,15 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
         startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
         setAlreadySpun(true);
         setNextSpinTime(startOfTomorrow);
-        
+
         // Mark as claimed
         setClaimed(true);
-        
+
         toast({
           title: 'Reward Claimed!',
           description: `$${actualReward.toFixed(4)} has been added to your balance.`,
         });
-        
+
         if (onRewardClaimed) {
           onRewardClaimed();
         }
@@ -224,7 +240,7 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
 
       <div className="relative bg-card border-2 border-border rounded-2xl p-6 max-w-md w-full card-glow">
         <h2 className="text-2xl font-bold text-center mb-4 text-gradient-gold">SCRATCH CARD</h2>
-        
+
         <p className="text-center text-muted-foreground mb-4">
           Scratch the card to reveal your prize!
         </p>
@@ -249,11 +265,12 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
           <canvas
             ref={canvasRef}
             className="relative block cursor-crosshair touch-none"
-            style={{ 
-              width: '100%', 
+            style={{
+              width: '100%',
               height: '200px',
               cursor: hasScratched || alreadySpun ? 'default' : 'crosshair',
-              opacity: alreadySpun ? 0.5 : 1
+              opacity: alreadySpun ? 0.5 : 1,
+              touchAction: 'none'
             }}
             onMouseDown={() => !alreadySpun && setIsScratching(true)}
             onMouseUp={() => setIsScratching(false)}
@@ -269,7 +286,7 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
         {!hasScratched && scratchPercentage > 0 && (
           <div className="mb-4">
             <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-              <div 
+              <div
                 className="bg-gradient-to-r from-primary to-accent h-full transition-all duration-300"
                 style={{ width: `${scratchPercentage}%` }}
               />
@@ -306,13 +323,13 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
             </Button>
           ) : (
             <>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={onClose}
               >
                 Close
               </Button>
-              <Button 
+              <Button
                 variant="primary"
                 onClick={async () => {
                   const canvas = canvasRef.current;
@@ -323,29 +340,29 @@ const SpinWheel = ({ onClose, onRewardClaimed }: SpinWheelProps) => {
                       setHasScratched(true);
                       setShowConfetti(true);
                       setScratchPercentage(100);
-                      
+
                       // Immediately fetch and claim the reward
                       try {
                         setIsClaiming(true);
                         const response = await userAPI.spinWheel();
                         const actualReward = response.data.reward;
-                        
+
                         setReward(actualReward);
-                        
+
                         const now = new Date();
                         const startOfTomorrow = new Date(now);
                         startOfTomorrow.setHours(0, 0, 0, 0);
                         startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
                         setAlreadySpun(true);
                         setNextSpinTime(startOfTomorrow);
-                        
+
                         setClaimed(true);
-                        
+
                         toast({
                           title: 'Reward Claimed!',
                           description: `$${actualReward.toFixed(4)} has been added to your balance.`,
                         });
-                        
+
                         if (onRewardClaimed) {
                           onRewardClaimed();
                         }
