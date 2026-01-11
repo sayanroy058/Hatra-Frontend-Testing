@@ -258,12 +258,12 @@ const Dashboard = () => {
         </div>
 
         {/* Daily Reward */}
-        <div className="border-2 border-primary rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 backdrop-blur-sm p-4 mb-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">
+        <div className="border-2 border-primary rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 backdrop-blur-sm p-4 mb-4 flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
               {canSpin ? 'Daily Reward Available!' : 'Daily Reward Claimed'}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
               {canSpin ? 'Spin & Win Exciting Rewards!' : `Next reward in: ${timeRemaining}`}
             </p>
           </div>
@@ -271,6 +271,7 @@ const Dashboard = () => {
             variant="gold"
             onClick={() => setShowSpinWheel(true)}
             disabled={!canSpin}
+            className="flex-shrink-0 whitespace-nowrap"
           >
             {canSpin ? 'Scratch Now' : 'Claimed'}
           </Button>
@@ -278,12 +279,12 @@ const Dashboard = () => {
 
         {/* Offer Rewards Section */}
         <div className="border-2 border-border rounded-xl bg-card/90 backdrop-blur-sm p-4 card-glow mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Gift className="w-5 h-5 text-primary" />
-              <h3 className="text-lg font-semibold">Level Rewards & Offers</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2 min-w-0">
+              <Gift className="w-5 h-5 text-primary flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-semibold truncate">Level Rewards & Offers</h3>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {loading || currentLevel === null ? (
                 <div className="flex items-center gap-2 bg-muted/50 px-3 py-1 rounded-full animate-pulse">
                   <Activity className="w-4 h-4 text-muted-foreground" />
@@ -299,6 +300,7 @@ const Dashboard = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/rewards')}
+                className="flex-shrink-0"
               >
                 View All
               </Button>
@@ -357,9 +359,9 @@ const Dashboard = () => {
                       : 'border-border bg-card/50'
                     }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className={`font-bold ${isCurrentLevel ? 'text-primary' : isCompleted ? 'text-green-500' : 'text-muted-foreground'
                           }`}>
                           Level {level.level}
@@ -376,7 +378,7 @@ const Dashboard = () => {
                         )}
                       </div>
                       {level.rank && (
-                        <div className="text-xs font-semibold text-primary mb-1">
+                        <div className="text-xs font-semibold text-primary mb-1 truncate">
                           🏆 {level.rank}
                         </div>
                       )}
@@ -384,13 +386,13 @@ const Dashboard = () => {
                         L: {level.leftRequired} + R: {level.rightRequired}
                       </div>
                       {level.reward && (
-                        <div className="text-sm font-semibold text-gradient-gold">
+                        <div className="text-sm font-semibold text-gradient-gold truncate">
                           💰 {level.reward}
                         </div>
                       )}
                     </div>
                     {isCurrentLevel && (
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="flex-shrink-0 whitespace-nowrap">
                         View Details
                       </Button>
                     )}

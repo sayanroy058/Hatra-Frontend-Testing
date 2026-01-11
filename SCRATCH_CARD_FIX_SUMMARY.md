@@ -1,90 +1,95 @@
-# Scratch Card iPhone Display Fix - Summary
+# iPhone Layout Fix - Dashboard Daily Reward & Level Sections
 
 ## Issue Description
-The scratch card feature was displaying incorrectly on iPhone devices, with layout and rendering issues that made it unusable.
+On iPhone devices, the Dashboard page had layout issues where button text was being cut off (e.g., "Scratch Now" showing as "Sc") due to text overflow in flex containers.
 
-## Root Causes Identified
+## Root Cause
+The flex layout used `justify-between` without proper overflow handling, causing the button to shrink and cut off its text when the left content was too wide for small screens (iPhone width ~375-430px).
 
-1. **Canvas Sizing Mismatch**: The canvas had fixed internal dimensions (300x200) that didn't match its display dimensions (100% width), causing distortion on mobile devices.
-
-2. **Device Pixel Ratio**: iPhone retina displays have a device pixel ratio of 2-3x, but the canvas wasn't accounting for this, resulting in blurry or incorrectly scaled rendering.
-
-3. **Positioning Issue**: The canvas was positioned as `relative` instead of `absolute`, preventing it from properly overlaying the prize content underneath.
-
-4. **Touch Coordinate Scaling**: Touch coordinates weren't being scaled according to the device pixel ratio, causing scratching to occur at incorrect positions.
+## Files Modified
+- `/src/pages/Dashboard.tsx` - Fixed three sections with overflow issues
+- `/src/components/SpinWheel.tsx` - Previously fixed canvas issues (unrelated to this specific issue)
 
 ## Fixes Applied
 
-### 1. Dynamic Canvas Sizing (Lines 69-102)
-- Added dynamic canvas initialization that reads the actual display dimensions
-- Implemented device pixel ratio (DPR) scaling for crisp rendering on retina displays
-- Added a 100ms timeout to ensure canvas is properly rendered before initialization
-- Canvas now scales properly to container width while maintaining aspect ratio
+### 1. Daily Reward Section (Lines 260-278)
+**Before:**
+- Container: `flex items-center justify-between`
+- Text div: `<div>` (no overflow handling)
+- Button: No shrink protection
+
+**After:**
+- Container: `flex items-center justify-between gap-3`
+- Text div: `min-w-0 flex-1` with `truncate` on text elements
+- Button: `flex-shrink-0 whitespace-nowrap`
 
 ```tsx
-const rect = canvas.getBoundingClientRect();
-const displayWidth = rect.width || canvas.offsetWidth || 300;
-const displayHeight = 200;
-
-const dpr = window.devicePixelRatio || 1;
-canvas.width = displayWidth * dpr;
-canvas.height = displayHeight * dpr;
-
-ctx.scale(dpr, dpr);
-```
-
-### 2. Touch/Mouse Coordinate Scaling (Lines 139-158)
-- Updated scratch function to properly scale touch and mouse coordinates with DPR
-- Adjusted scratch radius to scale with DPR for consistent scratching experience
-- Ensures accurate scratching regardless of device pixel density
-
-```tsx
-const dpr = window.devicePixelRatio || 1;
-x = (e.touches[0].clientX - rect.left) * dpr;
-y = (e.touches[0].clientY - rect.top) * dpr;
-ctx.arc(x, y, 20 * dpr, 0, Math.PI * 2);
-```
-
-### 3. Canvas Positioning Fix (Lines 248-283)
-- Changed canvas from `relative` to `absolute inset-0` positioning
-- Added explicit height to container div (200px)
-- Changed canvas height from fixed `200px` to `100%` to fill container
-- Added `touchAction: 'none'` to prevent unwanted scrolling during scratching
-
-```tsx
-<div className="relative w-full mb-4 rounded-xl overflow-hidden border-4 border-primary/50" style={{ height: '200px' }}>
-  <div className="absolute inset-0 ...">Prize Content</div>
-  <canvas className="absolute inset-0 ..." style={{ width: '100%', height: '100%', touchAction: 'none' }} />
+<div className="... flex items-center justify-between gap-3">
+  <div className="min-w-0 flex-1">
+    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">...</h3>
+    <p className="text-xs sm:text-sm text-muted-foreground truncate">...</p>
+  </div>
+  <Button className="flex-shrink-0 whitespace-nowrap">...</Button>
 </div>
 ```
 
-## Benefits
+### 2. Level Rewards Section Header (Lines 282-308)
 
-✅ **Proper Display on iPhone**: Canvas now renders correctly on all iPhone models including those with retina displays
+**After:**
+- Added `flex-wrap` to allow wrapping on very small screens
+- Added `min-w-0` and `truncate` to text container
+- Added `flex-shrink-0` to button group
 
-✅ **Accurate Touch Interaction**: Scratching works precisely where the user touches
+### 3. Level Items (Lines 362-399)
 
-✅ **Crisp Graphics**: Text and graphics render sharply on high-DPI displays
+**After:**
+- Added `gap-3` to prevent items from touching
+- Added `min-w-0` to content container
+- Added `flex-wrap` to level/badge row
+- Added `truncate` to rank and reward text
+- Added `flex-shrink-0 whitespace-nowrap` to View Details button
 
-✅ **Proper Layering**: Prize content is correctly revealed as the scratch layer is removed
+## Key CSS Classes Used
 
-✅ **No Scrolling Issues**: Touch actions don't trigger page scrolling
+| Class | Purpose |
+|-------|---------|
+| `flex-shrink-0` | Prevents element from shrinking |
+| `whitespace-nowrap` | Prevents text from wrapping to next line |
+| `min-w-0` | Allows text truncation in flex children |
+| `truncate` | Truncates text with ellipsis |
+| `flex-wrap` | Allows items to wrap to next line |
+| `gap-3` | Adds consistent spacing between items |
 
-## Testing Recommendations
+## Why These Fixes Work
 
-1. Test on various iPhone models (iPhone 12, 13, 14, 15 series)
-2. Test on both Safari and Chrome on iOS
-3. Verify scratching works smoothly with touch gestures
-4. Confirm the "Reveal All" button still works correctly
-5. Check that the prize content displays properly when revealed
+1. **`min-w-0` on text containers**: By default, flex children have `min-width: auto` which prevents them from shrinking below their content. `min-w-0` overrides this, allowing truncation.
 
-## Files Modified
+2. **`flex-shrink-0` on buttons**: Ensures buttons maintain their full size and never shrink.
 
-- `/src/components/SpinWheel.tsx` - Main scratch card component with all fixes applied
+3. **`whitespace-nowrap` on buttons**: Prevents button text from wrapping, keeping it on one line.
 
-## Technical Details
+4. **`truncate` on text**: Adds `overflow: hidden; text-overflow: ellipsis; white-space: nowrap;` to gracefully handle overflow with "..." instead of cutting off.
 
-- **Device Pixel Ratio Support**: Automatically detects and adapts to 1x, 2x, and 3x displays
-- **Responsive Design**: Canvas scales to container width while maintaining proper aspect ratio
-- **Touch Optimization**: Prevents default touch behaviors that could interfere with scratching
-- **Initialization Timing**: 100ms delay ensures DOM is ready before canvas initialization
+5. **`gap-3`**: Ensures there's always space between elements, preventing them from overlapping.
+
+## Testing Checklist
+
+- [ ] iPhone SE/Mini (375px width) - All buttons visible
+- [ ] iPhone 14/15 (390-430px width) - All buttons visible  
+- [ ] "Scratch Now" / "Claimed" button fully visible
+- [ ] "View All" button fully visible
+- [ ] "View Details" button fully visible
+- [ ] Long text gracefully truncates with "..."
+- [ ] No horizontal scrolling on page
+
+## Before & After
+
+**Before (iPhone):**
+- "Scratch Now" → "Sc" (cut off)
+- Buttons overlapping text
+- Layout breaking
+
+**After (iPhone):**
+- "Scratch Now" → "Scratch Now" ✓
+- Text truncates gracefully with "..."
+- Layout maintains proper spacing
