@@ -258,12 +258,12 @@ const Dashboard = () => {
         </div>
 
         {/* Daily Reward */}
-        <div className="border-2 border-primary rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 backdrop-blur-sm p-4 mb-4 flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
+        <div className="border-2 border-primary rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 backdrop-blur-sm p-4 mb-4 flex items-center justify-between gap-3 overflow-hidden">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <h3 className="text-base font-semibold text-foreground truncate">
               {canSpin ? 'Daily Reward Available!' : 'Daily Reward Claimed'}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {canSpin ? 'Spin & Win Exciting Rewards!' : `Next reward in: ${timeRemaining}`}
             </p>
           </div>
@@ -271,9 +271,9 @@ const Dashboard = () => {
             variant="gold"
             onClick={() => setShowSpinWheel(true)}
             disabled={!canSpin}
-            className="flex-shrink-0 whitespace-nowrap"
+            className="flex-shrink-0 min-w-[90px] text-center"
           >
-            {canSpin ? 'Scratch Now' : 'Claimed'}
+            {canSpin ? 'Scratch' : 'Claimed'}
           </Button>
         </div>
 
